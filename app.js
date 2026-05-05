@@ -158,6 +158,7 @@ function calc(){
   });
   const totalNet=combos.reduce((s,c)=>s+c.net100,0);
   const totalRev=combos.reduce((s,c)=>s+c.rev100,0);
+  $('totalRevAll').innerHTML=`${fmt(totalRev)}<br><span class="text-xs text-slate-500 font-normal">${combos.map(c=>fmt(c.rev100)).join(' + ')}</span>`;
   $('totalProfit').innerHTML=`${fmt(totalNet)}<br><span class="text-xs text-slate-500 font-normal">${combos.map((c,i)=>fmt(c.net100)).join(' + ')}</span>`;
   $('totalMargin').innerHTML=`${pct(totalRev>0?totalNet/totalRev:0)}<br><span class="text-xs text-slate-500 font-normal">${fmt(totalNet)} ÷ ${fmt(totalRev)}</span>`;
 }
