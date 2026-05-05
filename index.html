@@ -96,7 +96,7 @@ select{background:#1c1f29;border:1px solid #424754;color:#e0e2f0;font-family:Int
 </div>
 <div class="flex justify-between items-center py-2 border-b border-slate-700/30">
 <span class="text-sm text-slate-400">Tỷ giá RMB / VND</span>
-<input type="number" id="rateRMB" value="4000" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="calc()"/>
+<input type="number" id="rateRMB" value="4000" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="renderShipLegs();calc()"/>
 </div>
 <div class="flex justify-between items-center py-2 border-b border-slate-700/30">
 <span class="text-sm text-slate-400">Tỷ giá AED / VND</span>
@@ -192,18 +192,6 @@ select{background:#1c1f29;border:1px solid #424754;color:#e0e2f0;font-family:Int
 </div>
 </section>
 
-<!-- Total -->
-<section class="glass-card p-10 rounded-2xl border-2 border-green-500/30 relative overflow-hidden">
-<div class="absolute top-0 right-0 p-6 opacity-10"><span class="material-symbols-outlined text-[120px]">account_balance</span></div>
-<div class="flex flex-col md:flex-row justify-between items-center gap-6">
-<div><h2 class="text-xl font-bold uppercase tracking-widest text-green-400">TỔNG 300 ĐƠN (3 Combo)</h2>
-<p class="text-sm text-slate-400 mt-1 max-w-md">Tổng hợp mô phỏng dựa trên tỷ lệ GTC và chi phí ads đã cấu hình.</p></div>
-<div class="flex gap-10 text-center">
-<div><p id="totalProfit2" class="text-3xl font-bold text-green-400">0</p><p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-1">TỔNG LỢI NHUẬN (VND)</p></div>
-<div class="w-px h-16 bg-slate-700 self-center"></div>
-<div><p id="totalMargin2" class="text-3xl font-bold text-blue-400">0%</p><p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-1">BIÊN LỢI NHUẬN TB</p></div>
-</div></div>
-</section>
 </main>
 
 <script src="app.js"></script>

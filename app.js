@@ -49,6 +49,7 @@ async function fetchRates(){
       st.className='flex items-center gap-1 text-xs px-2 py-1 rounded bg-green-500/10 text-green-400';
       st.innerHTML=`<span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Live · ${ts}`;
       $('curInfo').textContent=cur+' / VND';
+      renderShipLegs();
       calc();
     }else throw new Error();
   }catch(e){st.className='flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-500/10 text-red-400';st.textContent='❌ Lỗi';}
@@ -161,10 +162,6 @@ function calc(){
   $('totalRevAll').innerHTML=`${fmt(totalRev)}<br><span class="text-xs text-slate-500 font-normal">${combos.map(c=>fmt(c.rev100)).join(' + ')}</span>`;
   $('totalProfit').innerHTML=`${fmt(totalNet)}<br><span class="text-xs text-slate-500 font-normal">${combos.map((c,i)=>fmt(c.net100)).join(' + ')}</span>`;
   $('totalMargin').innerHTML=`${pct(totalRev>0?totalNet/totalRev:0)}<br><span class="text-xs text-slate-500 font-normal">${fmt(totalNet)} ÷ ${fmt(totalRev)}</span>`;
-  // Also update bottom summary section
-  const tp2=$('totalProfit2'),tm2=$('totalMargin2');
-  if(tp2) tp2.textContent=fmt(totalNet);
-  if(tm2) tm2.textContent=pct(totalRev>0?totalNet/totalRev:0);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
