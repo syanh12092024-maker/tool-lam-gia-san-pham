@@ -136,22 +136,30 @@ function calc(){
     $(id+'Ads').textContent=fmt(c.ads);
     $(id+'ProfitGTC').textContent=fmt(c.profitGTC);$(id+'ProfitGTC').className='p-3 text-sm font-mono font-medium text-right '+(c.profitGTC>=0?'text-green-400':'text-red-400');
     $(id+'LossRet').textContent=fmt(c.lossRet);
-    $(id+'MarginGTC').textContent=pct(c.mGTC);$(id+'MarginReal').textContent=pct(c.m100);
+    $(id+'MarginGTC').innerHTML=`${pct(c.mGTC)}<br><span class="text-[10px] text-slate-500">${fmt(c.profitGTC)} ÷ ${fmt(c.rev)}</span>`;
+    $(id+'MarginReal').innerHTML=`${pct(c.m100)}<br><span class="text-[10px] text-slate-500">${fmt(c.net100)} ÷ ${fmt(c.rev100)}</span>`;
   });
   // Compare table
   const gO=combos[0].gO,rO=combos[0].rO;
+  const adsV=$('adsRate').value;
   $('targetRate').textContent=`TARGET: ${gO}% SUCCESS RATE`;
   combos.forEach((c,i)=>{
     const id=ids[i];
-    $(id+'CmpQty').textContent=c.qty;$(id+'CmpRev').textContent=fmt(c.rev);
-    $(id+'CmpProfit').textContent=fmt(c.profitGTC);$(id+'CmpLoss').textContent=fmt(c.lossRet);
-    $(id+'CmpGtc').textContent='+'+fmt(gO*c.profitGTC);$(id+'CmpRet').textContent=fmt(rO*c.lossRet);
-    $(id+'CmpNet').textContent=fmt(c.net100);$(id+'CmpMargin').textContent=pct(c.m100);
+    const price=$(ids[i]+'Price').value;
+    // Row values + formulas
+    $(id+'CmpQty').textContent=c.qty;
+    $(id+'CmpRev').innerHTML=`${fmt(c.rev)}<br><span class="text-[10px] text-slate-500">${price} × ${fmt(p.rateCur)}</span>`;
+    $(id+'CmpProfit').innerHTML=`${fmt(c.profitGTC)}<br><span class="text-[10px] text-slate-500">${fmt(c.rev)} − ${fmt(c.cogs)} − ${fmt(p.packFee)} − ${fmt(p.deliveryFee)} − ${fmt(c.ads)}</span>`;
+    $(id+'CmpLoss').innerHTML=`${fmt(c.lossRet)}<br><span class="text-[10px] text-slate-500">−(${fmt(p.packFee)} + ${fmt(p.failFee)})</span>`;
+    $(id+'CmpGtc').innerHTML=`+${fmt(gO*c.profitGTC)}<br><span class="text-[10px] text-slate-500">${gO} × ${fmt(c.profitGTC)}</span>`;
+    $(id+'CmpRet').innerHTML=`${fmt(rO*c.lossRet)}<br><span class="text-[10px] text-slate-500">${rO} × ${fmt(c.lossRet)}</span>`;
+    $(id+'CmpNet').innerHTML=`${fmt(c.net100)}<br><span class="text-[10px] text-slate-500">${fmt(gO*c.profitGTC)} + (${fmt(rO*c.lossRet)})</span>`;
+    $(id+'CmpMargin').innerHTML=`${pct(c.m100)}<br><span class="text-[10px] text-slate-500">${fmt(c.net100)} ÷ ${fmt(c.rev100)}</span>`;
   });
   const totalNet=combos.reduce((s,c)=>s+c.net100,0);
   const totalRev=combos.reduce((s,c)=>s+c.rev100,0);
-  $('totalProfit').textContent=fmt(totalNet);
-  $('totalMargin').textContent=pct(totalRev>0?totalNet/totalRev:0);
+  $('totalProfit').innerHTML=`${fmt(totalNet)}<br><span class="text-xs text-slate-500 font-normal">${combos.map((c,i)=>fmt(c.net100)).join(' + ')}</span>`;
+  $('totalMargin').innerHTML=`${pct(totalRev>0?totalNet/totalRev:0)}<br><span class="text-xs text-slate-500 font-normal">${fmt(totalNet)} ÷ ${fmt(totalRev)}</span>`;
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
