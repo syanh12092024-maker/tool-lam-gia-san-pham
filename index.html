@@ -4,187 +4,243 @@
 <title>PriceEngine Pro</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <style>
-body{background:#0F1117;color:#e0e2f0;font-family:Inter,sans-serif}
-.glass-card{background:#1A1D27;border:1px solid #2E323D}
+*{box-sizing:border-box}
+body{background:#0B0D13;color:#e0e2f0;font-family:Inter,sans-serif;margin:0}
+.glass-card{background:linear-gradient(135deg,#14171F 0%,#1A1D27 100%);border:1px solid #252934;border-radius:16px}
+.glass-card:hover{border-color:#3b4252}
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
-input[type=number]{background:transparent;outline:none;font-family:Inter;font-variant-numeric:tabular-nums}
+input[type=number]{background:transparent;outline:none;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 input[type=number]::-webkit-inner-spin-button{opacity:0}
-select{background:#1c1f29;border:1px solid #424754;color:#e0e2f0;font-family:Inter}
+select{background:#14171F;border:1px solid #2E323D;color:#e0e2f0;font-family:Inter;border-radius:10px}
+select:focus{border-color:#5b8af5;outline:none}
 @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin .8s linear infinite}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease-out}
+
+/* Tooltip for formula annotations */
+.has-tip{position:relative;cursor:default}
+.has-tip .tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1E2130;border:1px solid #3b4252;color:#94a3b8;font-size:10px;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:10;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.has-tip:hover .tip{display:block}
+.has-tip .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#3b4252}
+
+/* Table styles */
+.data-table{width:100%;border-collapse:separate;border-spacing:0}
+.data-table th{padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;background:#0F1219;border-bottom:1px solid #1E2130}
+.data-table td{padding:10px 16px;font-size:13px;font-family:'JetBrains Mono',monospace;border-bottom:1px solid #1a1d27}
+.data-table tr:hover td{background:#14171F}
+.data-table .row-highlight td{background:rgba(59,130,246,.04)}
+.data-table .row-total td{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(99,102,241,.08));border-top:1px solid rgba(99,102,241,.2)}
+
+/* Compact detail table */
+.detail-table{width:100%;border-collapse:collapse}
+.detail-table th{padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;background:#0F1219}
+.detail-table td{padding:7px 12px;font-size:12px;font-family:'JetBrains Mono',monospace;border-bottom:1px solid #1a1d2780}
+.detail-table tr:hover td{background:#14171F}
+
+/* Number colors */
+.num-pos{color:#34d399}.num-neg{color:#f87171}.num-warn{color:#fbbf24}.num-info{color:#60a5fa}
+.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
 </style>
 </head><body>
-<header class="bg-[#1A1D27] flex justify-between items-center w-full px-8 h-16 border-b border-[#2E323D] sticky top-0 z-50">
+
+<!-- Header -->
+<header class="bg-[#0F1219] flex justify-between items-center w-full px-6 lg:px-8 h-14 border-b border-[#1E2130] sticky top-0 z-50">
 <div class="flex items-center gap-4">
-<span class="text-lg font-black tracking-tighter text-white uppercase">PriceEngine Pro</span>
-<nav class="hidden md:flex items-center gap-6 ml-10">
-<a class="text-sm font-medium text-blue-400 border-b-2 border-blue-500 pb-4 mt-4" href="#">Scenarios</a>
-<a class="text-sm font-medium text-slate-400 hover:text-white" href="#">Markets</a>
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[16px]">calculate</span>
+</div>
+<span class="text-sm font-extrabold tracking-tight text-white uppercase">PriceEngine <span class="text-blue-400">Pro</span></span>
+</div>
+<nav class="hidden md:flex items-center gap-1 ml-6">
+<a class="text-xs font-semibold text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg" href="#">Scenarios</a>
+<a class="text-xs font-medium text-slate-500 hover:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-white/5 transition" href="#">Markets</a>
 </nav>
 </div>
 <div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-400">currency_exchange</span>
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400" id="curInfo">QAR / VND</span>
-<span id="rateStatus" class="flex items-center gap-1 text-xs px-2 py-1 rounded bg-yellow-500/10 text-yellow-400">⏸ Chưa cập nhật</span>
+<div class="flex items-center gap-2 bg-[#14171F] px-3 py-1.5 rounded-lg border border-[#252934]">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">currency_exchange</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mono" id="curInfo">QAR / VND</span>
+</div>
+<span id="rateStatus" class="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">⏸ Chưa cập nhật</span>
 </div>
 </header>
 
-<main class="max-w-[1600px] mx-auto p-8 space-y-6">
-<!-- Header -->
-<section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<main class="max-w-[1440px] mx-auto px-6 lg:px-8 py-6 space-y-5">
+
+<!-- Controls -->
+<section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
 <div>
-<h1 class="text-3xl font-bold tracking-tight">Bảng Làm Giá Sản Phẩm</h1>
-<div class="flex items-center gap-2 mt-1"><span class="w-2 h-2 rounded-full bg-green-500"></span><span class="text-sm text-slate-400">Live Market Data</span></div>
+<h1 class="text-2xl font-bold tracking-tight">Bảng Làm Giá Sản Phẩm</h1>
+<div class="flex items-center gap-2 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-xs text-slate-500">Live Market Data</span></div>
 </div>
-<div class="flex items-center gap-3">
-<select id="marketSelect" onchange="onMarketChange()" class="rounded-lg px-3 py-2 text-sm font-semibold">
+<div class="flex items-center gap-2 flex-wrap">
+<select id="marketSelect" onchange="onMarketChange()" class="px-3 py-2 text-xs font-semibold">
 <option value="QATAR">🇶🇦 Qatar (QAR)</option><option value="UAE">🇦🇪 UAE (AED)</option>
 <option value="SAUDI">🇸🇦 Saudi (SAR)</option><option value="KUWAIT">🇰🇼 Kuwait (KWD)</option>
 <option value="OMAN">🇴🇲 Oman (OMR)</option><option value="BAHRAIN">🇧🇭 Bahrain (BHD)</option>
 <option value="JAPAN">🇯🇵 Nhật (JPY)</option><option value="TAIWAN">🇹🇼 Đài Loan (TWD)</option>
 </select>
-<select id="goodsType" onchange="onGoodsTypeChange()" class="rounded-lg px-3 py-2 text-sm font-semibold">
-</select>
-<button id="btnFetch" onclick="fetchRates()" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 flex items-center gap-2">
-<span class="material-symbols-outlined text-[18px] icon">update</span>Cập nhật tỷ giá</button>
+<select id="goodsType" onchange="onGoodsTypeChange()" class="px-3 py-2 text-xs font-semibold"></select>
+<button id="btnFetch" onclick="fetchRates()" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:opacity-90 flex items-center gap-1.5 transition shadow-lg shadow-blue-500/20">
+<span class="material-symbols-outlined text-[16px] icon">update</span>Cập nhật tỷ giá</button>
 </div>
 </section>
 
 <!-- Combo Cards -->
-<section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-<div class="glass-card p-6 rounded-xl hover:border-blue-500/50 transition-colors group" id="comboCard1">
-<span class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded">COMBO 1</span>
-<div class="mt-4 flex items-center gap-3"><span class="text-sm text-slate-400">SP:</span><input type="number" id="c1Qty" value="3" min="1" class="text-2xl font-bold w-16 text-white" oninput="calc()"/></div>
-<div class="mt-4 border-t border-slate-700 pt-4 flex items-center gap-2">
-<input type="number" id="c1Price" value="109" min="1" class="text-3xl font-bold text-green-400 w-24" oninput="calc()"/>
-<span class="text-sm text-slate-400 cur-label">QAR</span>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="glass-card p-5 transition-all group" id="comboCard1">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md">COMBO 1</span>
+<span id="c1CardRev" class="text-[10px] font-semibold text-slate-500 mono"></span>
 </div>
-<p id="c1CardQty" class="text-xs text-slate-500 mt-1">3 Sản phẩm</p>
-<p id="c1CardPrice" class="hidden"></p>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="text-xs text-slate-500">SP:</span>
+<input type="number" id="c1Qty" value="3" min="1" class="text-xl font-bold w-12 text-white" oninput="calc()"/>
 </div>
-<div class="glass-card p-6 rounded-xl hover:border-blue-500/50 transition-colors group">
-<span class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded">COMBO 2</span>
-<div class="mt-4 flex items-center gap-3"><span class="text-sm text-slate-400">SP:</span><input type="number" id="c2Qty" value="4" min="1" class="text-2xl font-bold w-16 text-white" oninput="calc()"/></div>
-<div class="mt-4 border-t border-slate-700 pt-4 flex items-center gap-2">
-<input type="number" id="c2Price" value="179" min="1" class="text-3xl font-bold text-green-400 w-24" oninput="calc()"/>
-<span class="text-sm text-slate-400 cur-label">QAR</span>
+<div class="mt-3 pt-3 border-t border-[#252934] flex items-baseline gap-2">
+<input type="number" id="c1Price" value="109" min="1" class="text-2xl font-bold text-emerald-400 w-20" oninput="calc()"/>
+<span class="text-xs text-slate-500 cur-label">QAR</span>
 </div>
-<p id="c2CardQty" class="text-xs text-slate-500 mt-1">4 Sản phẩm</p>
-<p id="c2CardPrice" class="hidden"></p>
+<p id="c1CardQty" class="text-[10px] text-slate-600 mt-1">3 Sản phẩm</p>
 </div>
-<div class="glass-card p-6 rounded-xl hover:border-blue-500/50 transition-colors group">
-<span class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded">COMBO 3</span>
-<div class="mt-4 flex items-center gap-3"><span class="text-sm text-slate-400">SP:</span><input type="number" id="c3Qty" value="6" min="1" class="text-2xl font-bold w-16 text-white" oninput="calc()"/></div>
-<div class="mt-4 border-t border-slate-700 pt-4 flex items-center gap-2">
-<input type="number" id="c3Price" value="249" min="1" class="text-3xl font-bold text-green-400 w-24" oninput="calc()"/>
-<span class="text-sm text-slate-400 cur-label">QAR</span>
+<div class="glass-card p-5 transition-all group">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md">COMBO 2</span>
+<span id="c2CardRev" class="text-[10px] font-semibold text-slate-500 mono"></span>
 </div>
-<p id="c3CardQty" class="text-xs text-slate-500 mt-1">6 Sản phẩm</p>
-<p id="c3CardPrice" class="hidden"></p>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="text-xs text-slate-500">SP:</span>
+<input type="number" id="c2Qty" value="4" min="1" class="text-xl font-bold w-12 text-white" oninput="calc()"/>
+</div>
+<div class="mt-3 pt-3 border-t border-[#252934] flex items-baseline gap-2">
+<input type="number" id="c2Price" value="179" min="1" class="text-2xl font-bold text-emerald-400 w-20" oninput="calc()"/>
+<span class="text-xs text-slate-500 cur-label">QAR</span>
+</div>
+<p id="c2CardQty" class="text-[10px] text-slate-600 mt-1">4 Sản phẩm</p>
+</div>
+<div class="glass-card p-5 transition-all group">
+<div class="flex justify-between items-center">
+<span class="text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md">COMBO 3</span>
+<span id="c3CardRev" class="text-[10px] font-semibold text-slate-500 mono"></span>
+</div>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="text-xs text-slate-500">SP:</span>
+<input type="number" id="c3Qty" value="6" min="1" class="text-xl font-bold w-12 text-white" oninput="calc()"/>
+</div>
+<div class="mt-3 pt-3 border-t border-[#252934] flex items-baseline gap-2">
+<input type="number" id="c3Price" value="249" min="1" class="text-2xl font-bold text-emerald-400 w-20" oninput="calc()"/>
+<span class="text-xs text-slate-500 cur-label">QAR</span>
+</div>
+<p id="c3CardQty" class="text-[10px] text-slate-600 mt-1">6 Sản phẩm</p>
 </div>
 </section>
 
 <!-- Config -->
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-<div class="glass-card p-6 rounded-xl">
-<div class="flex items-center gap-2 mb-4"><span class="material-symbols-outlined text-blue-400">monitoring</span><h2 class="text-lg font-semibold">Tỷ Giá & Sản Phẩm</h2></div>
-<div class="space-y-1">
-<div class="flex justify-between items-center py-2 border-b border-slate-700/30">
-<span class="text-sm text-slate-400" id="rateLabel">Tỷ giá QAR / VND</span>
-<input type="number" id="rateCur" value="6458" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="calc()"/>
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+<div class="glass-card p-5">
+<div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-blue-400 text-[18px]">monitoring</span><h2 class="text-sm font-bold">Tỷ Giá & Sản Phẩm</h2></div>
+<div class="space-y-0">
+<div class="flex justify-between items-center py-2 border-b border-[#252934]">
+<span class="text-xs text-slate-400" id="rateLabel">Tỷ giá QAR / VND</span>
+<input type="number" id="rateCur" value="6458" class="text-xs font-medium text-right bg-[#0F1219] px-3 py-1.5 rounded-lg border border-[#252934] w-28 text-white" oninput="calc()"/>
 </div>
-<div class="flex justify-between items-center py-2 border-b border-slate-700/30">
-<span class="text-sm text-slate-400">Tỷ giá RMB / VND</span>
-<input type="number" id="rateRMB" value="4000" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="renderShipLegs();calc()"/>
+<div class="flex justify-between items-center py-2 border-b border-[#252934]">
+<span class="text-xs text-slate-400">Tỷ giá RMB / VND</span>
+<input type="number" id="rateRMB" value="4000" class="text-xs font-medium text-right bg-[#0F1219] px-3 py-1.5 rounded-lg border border-[#252934] w-28 text-white" oninput="renderShipLegs();calc()"/>
 </div>
-<div class="flex justify-between items-center py-2 border-b border-slate-700/30">
-<span class="text-sm text-slate-400">Tỷ giá AED / VND</span>
-<input type="number" id="rateAED" value="6800" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="renderShipLegs();calc()"/>
+<div class="flex justify-between items-center py-2 border-b border-[#252934]">
+<span class="text-xs text-slate-400">Tỷ giá AED / VND</span>
+<input type="number" id="rateAED" value="6800" class="text-xs font-medium text-right bg-[#0F1219] px-3 py-1.5 rounded-lg border border-[#252934] w-28 text-white" oninput="renderShipLegs();calc()"/>
 </div>
-<div class="flex justify-between items-center py-2 border-b border-slate-700/30">
-<span class="text-sm text-slate-400">Cân nặng / SP (kg)</span>
-<input type="number" id="weightPerSP" value="0.1" step="0.01" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="calc()"/>
+<div class="flex justify-between items-center py-2 border-b border-[#252934]">
+<span class="text-xs text-slate-400">Cân nặng / SP (kg)</span>
+<input type="number" id="weightPerSP" value="0.1" step="0.01" class="text-xs font-medium text-right bg-[#0F1219] px-3 py-1.5 rounded-lg border border-[#252934] w-28 text-white" oninput="calc()"/>
 </div>
 <div class="flex justify-between items-center py-2">
-<span class="text-sm text-slate-400">Giá nhập / SP (RMB)</span>
-<input type="number" id="priceRMB" value="2.6" step="0.1" class="text-sm font-mono font-medium text-right bg-[#272a34] px-3 py-1 rounded border border-slate-600 w-28" oninput="calc()"/>
+<span class="text-xs text-slate-400">Giá nhập / SP (RMB)</span>
+<input type="number" id="priceRMB" value="2.6" step="0.1" class="text-xs font-medium text-right bg-[#0F1219] px-3 py-1.5 rounded-lg border border-[#252934] w-28 text-white" oninput="calc()"/>
 </div>
 </div>
 </div>
-<div class="glass-card p-6 rounded-xl">
-<div class="flex items-center gap-2 mb-4"><span class="material-symbols-outlined text-blue-400">account_balance_wallet</span><h2 class="text-lg font-semibold">Chi Phí Vận Hành</h2></div>
-<div class="grid grid-cols-2 gap-x-6 gap-y-1" id="opsConfig">
-<div id="shipLegsContainer" class="col-span-2 grid grid-cols-2 gap-x-6"></div>
-<div class="flex flex-col gap-1 py-2 border-b border-slate-700/30">
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Phí đóng gói (đ/đơn)</span>
-<input type="number" id="packFee" value="24570" class="text-sm font-mono font-medium text-blue-300 bg-transparent outline-none" oninput="calc()"/>
+<div class="glass-card p-5">
+<div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-blue-400 text-[18px]">account_balance_wallet</span><h2 class="text-sm font-bold">Chi Phí Vận Hành</h2></div>
+<div class="grid grid-cols-2 gap-x-5 gap-y-0" id="opsConfig">
+<div id="shipLegsContainer" class="col-span-2 grid grid-cols-2 gap-x-5"></div>
+<div class="flex flex-col gap-0.5 py-2 border-b border-[#252934]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Phí đóng gói (đ/đơn)</span>
+<input type="number" id="packFee" value="24570" class="text-xs font-medium num-info bg-transparent outline-none" oninput="calc()"/>
 </div>
-<div class="flex flex-col gap-1 py-2 border-b border-slate-700/30">
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Phí đơn giao được (đ)</span>
-<input type="number" id="deliveryFee" value="127868" class="text-sm font-mono font-medium text-blue-300 bg-transparent outline-none" oninput="calc()"/>
+<div class="flex flex-col gap-0.5 py-2 border-b border-[#252934]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Phí đơn giao được (đ)</span>
+<input type="number" id="deliveryFee" value="127868" class="text-xs font-medium num-info bg-transparent outline-none" oninput="calc()"/>
 </div>
-<div class="flex flex-col gap-1 py-2 border-b border-slate-700/30">
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Tỷ lệ giao thành công (%)</span>
-<input type="number" id="gtcRate" value="70" min="0" max="100" class="text-sm font-mono font-medium text-green-400 bg-transparent outline-none" oninput="calc()"/>
+<div class="flex flex-col gap-0.5 py-2 border-b border-[#252934]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Tỷ lệ giao thành công (%)</span>
+<input type="number" id="gtcRate" value="70" min="0" max="100" class="text-xs font-medium num-pos bg-transparent outline-none" oninput="calc()"/>
 </div>
-<div class="flex flex-col gap-1 py-2 border-b border-slate-700/30">
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Ads / Doanh số (%)</span>
-<input type="number" id="adsRate" value="35" min="0" max="100" class="text-sm font-mono font-medium text-orange-400 bg-transparent outline-none" oninput="calc()"/>
+<div class="flex flex-col gap-0.5 py-2 border-b border-[#252934]">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Ads / Doanh số (%)</span>
+<input type="number" id="adsRate" value="35" min="0" max="100" class="text-xs font-medium text-orange-400 bg-transparent outline-none" oninput="calc()"/>
 </div>
-<div class="flex flex-col gap-1 py-2">
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Phí đơn hoàn (đ)</span>
-<input type="number" id="failFee" value="60021" class="text-sm font-mono font-medium text-red-400 bg-transparent outline-none" oninput="calc()"/>
+<div class="flex flex-col gap-0.5 py-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Phí đơn hoàn (đ)</span>
+<input type="number" id="failFee" value="60021" class="text-xs font-medium num-neg bg-transparent outline-none" oninput="calc()"/>
 </div>
 </div>
 </div>
 </section>
 
 <!-- Detail Tables -->
-<section class="space-y-4">
-<div class="flex items-center gap-4"><h2 class="text-xl font-bold">Chi Tiết Tính Toán</h2><div class="h-px flex-1 bg-slate-700/30"></div></div>
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-5" id="detailTables"></div>
+<section class="space-y-3">
+<div class="flex items-center gap-3"><h2 class="text-base font-bold">Chi Tiết Tính Toán</h2><div class="h-px flex-1 bg-[#1E2130]"></div></div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4" id="detailTables"></div>
 </section>
 
 <!-- Compare -->
-<section class="glass-card rounded-xl overflow-hidden">
-<div class="bg-[#272a34] px-6 py-3 border-b border-slate-700 flex justify-between items-center">
-<h2 class="text-lg font-semibold">So Sánh & Mô Phỏng 100 Đơn</h2>
-<span class="text-[11px] font-bold uppercase tracking-widest text-slate-400" id="targetRate">TARGET: 70% SUCCESS RATE</span>
+<section class="glass-card overflow-hidden">
+<div class="bg-[#0F1219] px-5 py-3 border-b border-[#1E2130] flex justify-between items-center">
+<h2 class="text-sm font-bold">So Sánh & Mô Phỏng 100 Đơn</h2>
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mono" id="targetRate">TARGET: 70% SUCCESS RATE</span>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full text-left"><thead><tr class="bg-[#181b25] border-b border-slate-700">
-<th class="p-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Metric</th>
-<th class="p-3 text-[11px] font-bold uppercase tracking-widest text-blue-400 text-center">Combo 1</th>
-<th class="p-3 text-[11px] font-bold uppercase tracking-widest text-blue-400 text-center">Combo 2</th>
-<th class="p-3 text-[11px] font-bold uppercase tracking-widest text-blue-400 text-center">Combo 3</th>
-</tr></thead><tbody class="divide-y divide-slate-700/20">
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">SP / Combo</td><td id="c1CmpQty" class="p-3 text-sm font-mono text-center">3</td><td id="c2CmpQty" class="p-3 text-sm font-mono text-center">4</td><td id="c3CmpQty" class="p-3 text-sm font-mono text-center">6</td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Doanh thu / đơn</td><td id="c1CmpRev" class="p-3 text-sm font-mono text-center"></td><td id="c2CmpRev" class="p-3 text-sm font-mono text-center"></td><td id="c3CmpRev" class="p-3 text-sm font-mono text-center"></td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">LN / đơn GTC</td><td id="c1CmpProfit" class="p-3 text-sm font-mono text-center text-green-400"></td><td id="c2CmpProfit" class="p-3 text-sm font-mono text-center text-green-400"></td><td id="c3CmpProfit" class="p-3 text-sm font-mono text-center text-green-400"></td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Lỗ / đơn hoàn</td><td id="c1CmpLoss" class="p-3 text-sm font-mono text-center text-red-400"></td><td id="c2CmpLoss" class="p-3 text-sm font-mono text-center text-red-400"></td><td id="c3CmpLoss" class="p-3 text-sm font-mono text-center text-red-400"></td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Lời GTC (100đ)</td><td id="c1CmpGtc" class="p-3 text-sm font-mono text-center text-green-400"></td><td id="c2CmpGtc" class="p-3 text-sm font-mono text-center text-green-400"></td><td id="c3CmpGtc" class="p-3 text-sm font-mono text-center text-green-400"></td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Lỗ hoàn (100đ)</td><td id="c1CmpRet" class="p-3 text-sm font-mono text-center text-red-400"></td><td id="c2CmpRet" class="p-3 text-sm font-mono text-center text-red-400"></td><td id="c3CmpRet" class="p-3 text-sm font-mono text-center text-red-400"></td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">LN ròng (100đ)</td><td id="c1CmpNet" class="p-3 text-sm font-mono text-center text-green-400"></td><td id="c2CmpNet" class="p-3 text-sm font-mono text-center text-green-400"></td><td id="c3CmpNet" class="p-3 text-sm font-mono text-center text-green-400"></td></tr>
-<tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Margin (100đ)</td><td id="c1CmpMargin" class="p-3 text-sm font-mono text-center text-yellow-400"></td><td id="c2CmpMargin" class="p-3 text-sm font-mono text-center text-yellow-400"></td><td id="c3CmpMargin" class="p-3 text-sm font-mono text-center text-yellow-400"></td></tr>
-<tr class="bg-blue-500/10 font-bold">
-<td class="p-4 text-sm text-blue-400">TỔNG 300 ĐƠN (3 COMBO)</td>
-<td colspan="2" class="p-4 text-right border-r border-slate-700/50">
-<div class="flex flex-col items-end">
-<span id="totalRevAll" class="text-2xl text-blue-300"></span>
-<span class="text-xs text-slate-500 font-normal uppercase tracking-wider">Tổng doanh thu (300đ)</span>
+<table class="data-table">
+<thead><tr>
+<th class="text-left w-[180px]">Metric</th>
+<th class="text-right">Combo 1</th>
+<th class="text-right">Combo 2</th>
+<th class="text-right">Combo 3</th>
+</tr></thead>
+<tbody>
+<tr><td class="text-sm !font-sans text-slate-300">SP / Combo</td><td id="c1CmpQty" class="text-right text-white">3</td><td id="c2CmpQty" class="text-right text-white">4</td><td id="c3CmpQty" class="text-right text-white">6</td></tr>
+<tr><td class="text-sm !font-sans text-slate-300">Doanh thu / đơn</td><td id="c1CmpRev" class="text-right"></td><td id="c2CmpRev" class="text-right"></td><td id="c3CmpRev" class="text-right"></td></tr>
+<tr class="row-highlight"><td class="text-sm !font-sans text-slate-300">LN / đơn GTC</td><td id="c1CmpProfit" class="text-right num-pos"></td><td id="c2CmpProfit" class="text-right num-pos"></td><td id="c3CmpProfit" class="text-right num-pos"></td></tr>
+<tr><td class="text-sm !font-sans text-slate-300">Lỗ / đơn hoàn</td><td id="c1CmpLoss" class="text-right num-neg"></td><td id="c2CmpLoss" class="text-right num-neg"></td><td id="c3CmpLoss" class="text-right num-neg"></td></tr>
+<tr><td class="text-sm !font-sans text-slate-300">Lời GTC (100đ)</td><td id="c1CmpGtc" class="text-right num-pos"></td><td id="c2CmpGtc" class="text-right num-pos"></td><td id="c3CmpGtc" class="text-right num-pos"></td></tr>
+<tr><td class="text-sm !font-sans text-slate-300">Lỗ hoàn (100đ)</td><td id="c1CmpRet" class="text-right num-neg"></td><td id="c2CmpRet" class="text-right num-neg"></td><td id="c3CmpRet" class="text-right num-neg"></td></tr>
+<tr class="row-highlight"><td class="text-sm !font-sans text-slate-300 font-semibold">LN ròng (100đ)</td><td id="c1CmpNet" class="text-right num-pos font-bold"></td><td id="c2CmpNet" class="text-right num-pos font-bold"></td><td id="c3CmpNet" class="text-right num-pos font-bold"></td></tr>
+<tr class="row-highlight"><td class="text-sm !font-sans text-slate-300 font-semibold">Margin (100đ)</td><td id="c1CmpMargin" class="text-right num-warn font-bold"></td><td id="c2CmpMargin" class="text-right num-warn font-bold"></td><td id="c3CmpMargin" class="text-right num-warn font-bold"></td></tr>
+<tr class="row-total">
+<td class="!text-sm !font-sans font-bold text-blue-400 !py-4">TỔNG 300 ĐƠN (3 COMBO)</td>
+<td class="text-right !py-4">
+<div class="flex flex-col items-end gap-0.5">
+<span id="totalRevAll" class="text-lg font-bold num-info"></span>
+<span class="text-[9px] text-slate-500 uppercase tracking-wider !font-sans">Tổng DT (300đ)</span>
 </div>
 </td>
-<td colspan="2" class="p-4 text-right border-r border-slate-700/50">
-<div class="flex flex-col items-end">
-<span id="totalProfit" class="text-2xl text-green-400"></span>
-<span class="text-xs text-slate-500 font-normal uppercase tracking-wider">Tổng lợi nhuận (VND)</span>
+<td class="text-right !py-4">
+<div class="flex flex-col items-end gap-0.5">
+<span id="totalProfit" class="text-lg font-bold num-pos"></span>
+<span class="text-[9px] text-slate-500 uppercase tracking-wider !font-sans">Tổng LN (VND)</span>
 </div>
 </td>
-<td colspan="3" class="p-4 text-right">
-<div class="flex flex-col items-end">
-<span id="totalMargin" class="text-2xl text-yellow-400"></span>
-<span class="text-xs text-slate-500 font-normal uppercase tracking-wider">Biên lợi nhuận TB</span>
+<td class="text-right !py-4">
+<div class="flex flex-col items-end gap-0.5">
+<span id="totalMargin" class="text-lg font-bold num-warn"></span>
+<span class="text-[9px] text-slate-500 uppercase tracking-wider !font-sans">Biên LN TB</span>
 </div>
 </td>
 </tr>
@@ -196,4 +252,3 @@ select{background:#1c1f29;border:1px solid #424754;color:#e0e2f0;font-family:Int
 
 <script src="app.js"></script>
 </body></html>
-

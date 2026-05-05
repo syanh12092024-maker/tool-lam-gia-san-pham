@@ -30,12 +30,14 @@ const GOODS_TYPES=[
 const $=id=>document.getElementById(id);
 const fmt=n=>{if(!n&&n!==0)return'—';const a=Math.abs(Math.round(n));return(n<0?'-':'')+a.toLocaleString('vi-VN')};
 const pct=n=>isNaN(n)?'0%':(n*100).toFixed(2)+'%';
-let liveRates=null, aedRate=6800; // store AED rate for shipping calc
+// Wrap a value in a tooltip span showing the formula
+const tip=(val,formula)=>`<span class="has-tip">${val}<span class="tip">${formula}</span></span>`;
+let liveRates=null, aedRate=6800;
 
 async function fetchRates(){
   const btn=$('btnFetch'),st=$('rateStatus');
   btn.disabled=true;btn.querySelector('.icon').textContent='sync';btn.querySelector('.icon').classList.add('animate-spin');
-  st.className='flex items-center gap-1 text-xs px-2 py-1 rounded bg-yellow-500/10 text-yellow-400';st.innerHTML='⏳ Đang tải...';
+  st.className='flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20';st.innerHTML='⏳ Đang tải...';
   try{
     const res=await fetch('https://open.er-api.com/v6/latest/VND');
     const data=await res.json();
@@ -46,13 +48,13 @@ async function fetchRates(){
       if(liveRates['CNY']){$('rateRMB').value=Math.round(1/liveRates['CNY']);}
       if(liveRates['AED']){aedRate=Math.round(1/liveRates['AED']);$('rateAED').value=aedRate;}
       const ts=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
-      st.className='flex items-center gap-1 text-xs px-2 py-1 rounded bg-green-500/10 text-green-400';
-      st.innerHTML=`<span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Live · ${ts}`;
+      st.className='flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+      st.innerHTML=`<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live · ${ts}`;
       $('curInfo').textContent=cur+' / VND';
       renderShipLegs();
       calc();
     }else throw new Error();
-  }catch(e){st.className='flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-500/10 text-red-400';st.textContent='❌ Lỗi';}
+  }catch(e){st.className='flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20';st.textContent='❌ Lỗi';}
   btn.disabled=false;btn.querySelector('.icon').classList.remove('animate-spin');btn.querySelector('.icon').textContent='update';
 }
 
@@ -61,20 +63,18 @@ function getShipLegs(market, goodsType){
   const rmbRate=+$('rateRMB').value;
   const aed=+$('rateAED').value;
   if(mk.route==='direct') return [{label:'China → '+market,costPerKg:mk.directShip,note:'VND/kg'}];
-  // Leg 1: China → UAE
   let leg1Rate;
   if(mk.route==='saudi') leg1Rate=SHIP_CN_SA[goodsType]||SHIP_CN_SA.normal;
   else if(mk.route==='uae') leg1Rate=SHIP_CN_UAE[goodsType]||SHIP_CN_UAE.normal;
   else leg1Rate=SHIP_CN_GCC[goodsType]||SHIP_CN_GCC.normal;
   const leg1VND=Math.round(leg1Rate*rmbRate);
-  const legs=[{label:`China → UAE (${leg1Rate} RMB)`,costPerKg:leg1VND,note:`${leg1Rate} RMB × ${rmbRate} = ${fmt(leg1VND)} đ/kg`}];
-  // Leg 2: UAE → Destination
+  const legs=[{label:`China → UAE (${leg1Rate} RMB)`,costPerKg:leg1VND,note:`${leg1Rate} RMB × ${fmt(rmbRate)} = ${fmt(leg1VND)} đ/kg`}];
   if(mk.route!=='uae'){
     let leg2AED=SHIP_UAE_DEST[market]||35;
     const cap=FREIGHT_CAP[goodsType]||40;
     if(leg2AED>cap) leg2AED=cap;
     const leg2VND=Math.round(leg2AED*aed);
-    legs.push({label:`UAE → ${market} (${leg2AED} AED)`,costPerKg:leg2VND,note:`${leg2AED} AED × ${aed} = ${fmt(leg2VND)} đ/kg`});
+    legs.push({label:`UAE → ${market} (${leg2AED} AED)`,costPerKg:leg2VND,note:`${leg2AED} AED × ${fmt(aed)} = ${fmt(leg2VND)} đ/kg`});
   }
   return legs;
 }
@@ -84,7 +84,7 @@ function renderShipLegs(){
   const goodsType=$('goodsType').value;
   const legs=getShipLegs(market,goodsType);
   let h='';
-  legs.forEach(l=>{h+=`<div class="flex flex-col gap-1 py-2 border-b border-slate-700/30"><span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">${l.label}</span><span class="text-sm font-mono font-medium text-blue-300">${fmt(l.costPerKg)} đ/kg</span><span class="text-[10px] text-slate-500">${l.note}</span></div>`;});
+  legs.forEach(l=>{h+=`<div class="flex flex-col gap-0.5 py-2 border-b border-[#252934]"><span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">${l.label}</span><span class="text-xs mono font-medium num-info">${fmt(l.costPerKg)} đ/kg</span><span class="text-[9px] text-slate-600">${l.note}</span></div>`;});
   $('shipLegsContainer').innerHTML=h;
 }
 
@@ -125,69 +125,78 @@ function calc(){
     gtcRate:+$('gtcRate').value/100,adsRate:+$('adsRate').value/100};
   const ids=['c1','c2','c3'];
   const combos=ids.map(id=>calcCombo(+$(id+'Qty').value,+$(id+'Price').value,p));
+
   // Update combo cards
-  combos.forEach((c,i)=>{$(ids[i]+'CardQty').textContent=c.qty+' Sản phẩm';});
+  combos.forEach((c,i)=>{
+    $(ids[i]+'CardQty').textContent=c.qty+' Sản phẩm';
+    $(ids[i]+'CardRev').textContent='≈ '+fmt(c.rev)+' đ';
+  });
+
   // Update detail tables
   combos.forEach((c,i)=>{
     const id=ids[i];
-    $(id+'DetailTitle').textContent=`COMBO ${i+1} (${c.qty} SP)`;
+    $(id+'DetailTitle').textContent=`COMBO ${i+1} · ${c.qty} SP`;
     $(id+'Revenue').textContent=fmt(c.rev);$(id+'Import').textContent=fmt(c.imp);
     $(id+'Ship').textContent=fmt(c.ship);$(id+'Pack').textContent=fmt(p.packFee);$(id+'PackR').textContent=fmt(p.packFee);
     $(id+'Del').textContent=fmt(p.deliveryFee);$(id+'Fail').textContent=fmt(p.failFee);
     $(id+'Ads').textContent=fmt(c.ads);
-    $(id+'ProfitGTC').textContent=fmt(c.profitGTC);$(id+'ProfitGTC').className='p-3 text-sm font-mono font-medium text-right '+(c.profitGTC>=0?'text-green-400':'text-red-400');
+    $(id+'ProfitGTC').textContent=fmt(c.profitGTC);
+    $(id+'ProfitGTC').className='text-right '+(c.profitGTC>=0?'num-pos':'num-neg');
     $(id+'LossRet').textContent=fmt(c.lossRet);
-    $(id+'MarginGTC').innerHTML=`${pct(c.mGTC)}<br><span class="text-[10px] text-slate-500">${fmt(c.profitGTC)} ÷ ${fmt(c.rev)}</span>`;
-    $(id+'MarginReal').innerHTML=`${pct(c.m100)}<br><span class="text-[10px] text-slate-500">${fmt(c.net100)} ÷ ${fmt(c.rev100)}</span>`;
+    $(id+'MarginGTC').innerHTML=tip(pct(c.mGTC),`${fmt(c.profitGTC)} ÷ ${fmt(c.rev)}`);
+    $(id+'MarginReal').innerHTML=tip(pct(c.m100),`${fmt(c.net100)} ÷ ${fmt(c.rev100)}`);
   });
+
   // Compare table
   const gO=combos[0].gO,rO=combos[0].rO;
-  const adsV=$('adsRate').value;
   $('targetRate').textContent=`TARGET: ${gO}% SUCCESS RATE`;
   combos.forEach((c,i)=>{
     const id=ids[i];
     const price=$(ids[i]+'Price').value;
-    // Row values + formulas
     $(id+'CmpQty').textContent=c.qty;
-    $(id+'CmpRev').innerHTML=`${fmt(c.rev)}<br><span class="text-[10px] text-slate-500">${price} × ${fmt(p.rateCur)}</span>`;
-    $(id+'CmpProfit').innerHTML=`${fmt(c.profitGTC)}<br><span class="text-[10px] text-slate-500">${fmt(c.rev)} − ${fmt(c.cogs)} − ${fmt(p.packFee)} − ${fmt(p.deliveryFee)} − ${fmt(c.ads)}</span>`;
-    $(id+'CmpLoss').innerHTML=`${fmt(c.lossRet)}<br><span class="text-[10px] text-slate-500">−(${fmt(p.packFee)} + ${fmt(p.failFee)})</span>`;
-    $(id+'CmpGtc').innerHTML=`+${fmt(gO*c.profitGTC)}<br><span class="text-[10px] text-slate-500">${gO} × ${fmt(c.profitGTC)}</span>`;
-    $(id+'CmpRet').innerHTML=`${fmt(rO*c.lossRet)}<br><span class="text-[10px] text-slate-500">${rO} × ${fmt(c.lossRet)}</span>`;
-    $(id+'CmpNet').innerHTML=`${fmt(c.net100)}<br><span class="text-[10px] text-slate-500">${fmt(gO*c.profitGTC)} + (${fmt(rO*c.lossRet)})</span>`;
-    $(id+'CmpMargin').innerHTML=`${pct(c.m100)}<br><span class="text-[10px] text-slate-500">${fmt(c.net100)} ÷ ${fmt(c.rev100)}</span>`;
+    $(id+'CmpRev').innerHTML=tip(fmt(c.rev),`${price} × ${fmt(p.rateCur)}`);
+    $(id+'CmpProfit').innerHTML=tip(fmt(c.profitGTC),`DT ${fmt(c.rev)} − COGS ${fmt(c.cogs)} − Gói ${fmt(p.packFee)} − VC ${fmt(p.deliveryFee)} − Ads ${fmt(c.ads)}`);
+    $(id+'CmpLoss').innerHTML=tip(fmt(c.lossRet),`−(${fmt(p.packFee)} + ${fmt(p.failFee)})`);
+    $(id+'CmpGtc').innerHTML=tip('+'+fmt(gO*c.profitGTC),`${gO} × ${fmt(c.profitGTC)}`);
+    $(id+'CmpRet').innerHTML=tip(fmt(rO*c.lossRet),`${rO} × ${fmt(c.lossRet)}`);
+    $(id+'CmpNet').innerHTML=tip(fmt(c.net100),`${fmt(gO*c.profitGTC)} + (${fmt(rO*c.lossRet)})`);
+    $(id+'CmpMargin').innerHTML=tip(pct(c.m100),`${fmt(c.net100)} ÷ ${fmt(c.rev100)}`);
   });
+
   const totalNet=combos.reduce((s,c)=>s+c.net100,0);
   const totalRev=combos.reduce((s,c)=>s+c.rev100,0);
-  $('totalRevAll').innerHTML=`${fmt(totalRev)}<br><span class="text-xs text-slate-500 font-normal">${combos.map(c=>fmt(c.rev100)).join(' + ')}</span>`;
-  $('totalProfit').innerHTML=`${fmt(totalNet)}<br><span class="text-xs text-slate-500 font-normal">${combos.map((c,i)=>fmt(c.net100)).join(' + ')}</span>`;
-  $('totalMargin').innerHTML=`${pct(totalRev>0?totalNet/totalRev:0)}<br><span class="text-xs text-slate-500 font-normal">${fmt(totalNet)} ÷ ${fmt(totalRev)}</span>`;
+  $('totalRevAll').innerHTML=tip(fmt(totalRev),combos.map(c=>fmt(c.rev100)).join(' + '));
+  $('totalProfit').innerHTML=tip(fmt(totalNet),combos.map(c=>fmt(c.net100)).join(' + '));
+  $('totalMargin').innerHTML=tip(pct(totalRev>0?totalNet/totalRev:0),`${fmt(totalNet)} ÷ ${fmt(totalRev)}`);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
   // Build goods type selector
   const gt=$('goodsType');
   if(gt) GOODS_TYPES.forEach(g=>{const o=document.createElement('option');o.value=g.id;o.textContent=g.label;gt.appendChild(o);});
+
   // Build detail tables
   const dtEl=$('detailTables');
   if(dtEl)['c1','c2','c3'].forEach((id,i)=>{
-    dtEl.innerHTML+=`<div class="glass-card rounded-xl overflow-hidden">
-    <div class="bg-[#272a34] px-6 py-3 border-b border-slate-700"><h3 class="text-lg font-semibold text-blue-400" id="${id}DetailTitle">COMBO ${i+1}</h3></div>
-    <table class="w-full text-left"><thead><tr class="bg-[#181b25] border-b border-slate-700">
-    <th class="p-3 text-[11px] font-bold uppercase tracking-widest text-slate-400">Hạng Mục</th>
-    <th class="p-3 text-[11px] font-bold uppercase tracking-widest text-slate-400 text-right">Đơn GTC</th>
-    <th class="p-3 text-[11px] font-bold uppercase tracking-widest text-slate-400 text-right">Đơn Hoàn</th>
-    </tr></thead><tbody class="divide-y divide-slate-700/20">
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Doanh số</td><td id="${id}Revenue" class="p-3 text-sm font-mono text-right"></td><td class="p-3 text-sm font-mono text-right text-red-400">0</td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Giá nhập</td><td id="${id}Import" class="p-3 text-sm font-mono text-right"></td><td class="p-3 text-sm font-mono text-right">—</td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">VC Quốc tế</td><td id="${id}Ship" class="p-3 text-sm font-mono text-right"></td><td class="p-3 text-sm font-mono text-right">—</td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Phí đóng gói</td><td id="${id}Pack" class="p-3 text-sm font-mono text-right"></td><td id="${id}PackR" class="p-3 text-sm font-mono text-right"></td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Phí giao hàng</td><td id="${id}Del" class="p-3 text-sm font-mono text-right"></td><td class="p-3 text-sm font-mono text-right">—</td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Phí đơn hoàn</td><td class="p-3 text-sm font-mono text-right">—</td><td id="${id}Fail" class="p-3 text-sm font-mono text-right text-red-400"></td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Chi phí Ads</td><td id="${id}Ads" class="p-3 text-sm font-mono text-right"></td><td class="p-3 text-sm font-mono text-right">—</td></tr>
-    <tr class="bg-blue-500/5 font-bold"><td class="p-3 text-sm text-blue-400">Lợi nhuận</td><td id="${id}ProfitGTC" class="p-3 text-sm font-mono text-right text-green-400"></td><td id="${id}LossRet" class="p-3 text-sm font-mono text-right text-red-400"></td></tr>
-    <tr class="hover:bg-[#31343f]"><td class="p-3 text-sm">Margin / đơn GTC</td><td id="${id}MarginGTC" class="p-3 text-sm font-mono text-right text-yellow-400 font-bold"></td><td class="p-3 text-sm font-mono text-right">—</td></tr>
-    <tr class="bg-yellow-500/5"><td class="p-3 text-sm font-bold text-yellow-400">Margin thực tế (cả hoàn)</td><td id="${id}MarginReal" class="p-3 text-sm font-mono text-right text-yellow-400 font-bold" colspan="2"></td></tr>
+    dtEl.innerHTML+=`<div class="glass-card overflow-hidden">
+    <div class="bg-[#0F1219] px-4 py-2.5 border-b border-[#1E2130] flex items-center gap-2">
+    <div class="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center"><span class="text-[10px] font-bold text-blue-400">${i+1}</span></div>
+    <h3 class="text-xs font-bold text-white" id="${id}DetailTitle">COMBO ${i+1}</h3></div>
+    <table class="detail-table"><thead><tr>
+    <th class="text-left">Hạng Mục</th>
+    <th class="text-right">Đơn GTC</th>
+    <th class="text-right">Đơn Hoàn</th>
+    </tr></thead><tbody>
+    <tr><td class="!font-sans text-slate-400">Doanh số</td><td id="${id}Revenue" class="text-right text-white"></td><td class="text-right num-neg">0</td></tr>
+    <tr><td class="!font-sans text-slate-400">Giá nhập</td><td id="${id}Import" class="text-right text-slate-300"></td><td class="text-right text-slate-600">—</td></tr>
+    <tr><td class="!font-sans text-slate-400">VC Quốc tế</td><td id="${id}Ship" class="text-right text-slate-300"></td><td class="text-right text-slate-600">—</td></tr>
+    <tr><td class="!font-sans text-slate-400">Phí đóng gói</td><td id="${id}Pack" class="text-right text-slate-300"></td><td id="${id}PackR" class="text-right text-slate-300"></td></tr>
+    <tr><td class="!font-sans text-slate-400">Phí giao hàng</td><td id="${id}Del" class="text-right text-slate-300"></td><td class="text-right text-slate-600">—</td></tr>
+    <tr><td class="!font-sans text-slate-400">Phí đơn hoàn</td><td class="text-right text-slate-600">—</td><td id="${id}Fail" class="text-right num-neg"></td></tr>
+    <tr><td class="!font-sans text-slate-400">Chi phí Ads</td><td id="${id}Ads" class="text-right text-orange-400"></td><td class="text-right text-slate-600">—</td></tr>
+    <tr style="background:rgba(59,130,246,.05)"><td class="!font-sans font-semibold num-info">Lợi nhuận</td><td id="${id}ProfitGTC" class="text-right num-pos font-bold"></td><td id="${id}LossRet" class="text-right num-neg font-bold"></td></tr>
+    <tr><td class="!font-sans text-slate-400">Margin / đơn GTC</td><td id="${id}MarginGTC" class="text-right num-warn font-bold"></td><td class="text-right text-slate-600">—</td></tr>
+    <tr style="background:rgba(250,204,21,.04)"><td class="!font-sans font-semibold num-warn">Margin thực tế (cả hoàn)</td><td id="${id}MarginReal" class="text-right num-warn font-bold" colspan="2"></td></tr>
     </tbody></table></div>`;
   });
   onMarketChange();fetchRates();
