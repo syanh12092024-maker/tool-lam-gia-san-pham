@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bảng Làm Giá Sản Phẩm</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#232735;--border:#2d3148;--text:#e4e6f0;--text-dim:#8b8fa8;--accent:#22c55e;--accent-dim:rgba(34,197,94,.12);--red:#ef4444;--red-dim:rgba(239,68,68,.12);--blue:#3b82f6;--blue-dim:rgba(59,130,246,.12);--yellow:#eab308;--yellow-dim:rgba(234,179,8,.12);--purple:#a855f7;--purple-dim:rgba(168,85,247,.12)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:24px}
+h1{font-size:1.5rem;font-weight:700;margin-bottom:6px}
+.subtitle{color:var(--text-dim);font-size:.85rem;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h2{font-size:.9rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
+.param-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.param-row:last-child{border-bottom:none}
+.param-label{font-size:.85rem;color:var(--text-dim)}
+input[type="number"],select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;width:120px;text-align:right;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;outline:none;transition:border-color .2s}
+input[type="number"]:focus,select:focus{border-color:var(--blue)}
+select{text-align:left;cursor:pointer;width:auto;min-width:160px}
+input.combo-input{width:60px;text-align:center;font-size:1.1rem;font-weight:700}
+input.combo-price{width:100px}
+.combo-config-card{text-align:center;position:relative;overflow:hidden}
+.combo-config-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.combo-config-card.c1::before{background:var(--accent)}
+.combo-config-card.c2::before{background:var(--blue)}
+.combo-config-card.c3::before{background:var(--purple)}
+.combo-config-card .combo-title{font-size:1rem;font-weight:700;margin-bottom:4px}
+.combo-config-card .combo-sub{font-size:.75rem;color:var(--text-dim);margin-bottom:16px}
+.combo-config-card .field{margin-bottom:12px}
+.combo-config-card .field-label{font-size:.75rem;color:var(--text-dim);margin-bottom:4px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--surface2);padding:12px 16px;text-align:right;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);border-bottom:2px solid var(--border)}
+thead th:first-child{text-align:left}
+tbody td{padding:10px 16px;text-align:right;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+tbody td:first-child{text-align:left;color:var(--text-dim);font-weight:500}
+tbody tr:hover{background:var(--surface2)}
+.row-revenue td{background:var(--accent-dim)}
+.row-revenue td:first-child{color:var(--accent);font-weight:600}
+.row-cost td:first-child{color:var(--red)}
+.row-profit td{background:var(--accent-dim);font-weight:700;border-top:2px solid var(--accent)}
+.row-loss td{background:var(--red-dim);font-weight:700}
+.positive{color:var(--accent)}.negative{color:var(--red)}.highlight{color:var(--yellow);font-weight:700}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;position:relative;overflow:hidden}
+.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.summary-card.sc1::before{background:var(--accent)}
+.summary-card.sc2::before{background:var(--blue)}
+.summary-card.sc3::before{background:var(--purple)}
+.summary-card .label{font-size:.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.summary-card .value{font-size:1.3rem;font-weight:700}
+.summary-card .sub{font-size:.75rem;color:var(--text-dim);margin-top:4px}
+.section-title{font-size:1.1rem;font-weight:700;margin:32px 0 16px;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%}
+.compare-table th.c1{color:var(--accent)}.compare-table th.c2{color:var(--blue)}.compare-table th.c3{color:var(--purple)}
+.market-selector{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:24px;flex-wrap:wrap}
+.market-selector label{font-weight:600;font-size:.9rem;white-space:nowrap}
+.market-selector select{font-size:1rem;padding:8px 14px;min-width:200px}
+.market-flag{font-size:1.4rem;margin-right:4px}
+.ship-legs{font-size:.75rem;color:var(--text-dim);margin-top:2px}
+.btn-fetch{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-fetch:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
+.btn-fetch:active{transform:translateY(0)}
+.btn-fetch:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-fetch .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+.btn-fetch.loading .spinner{display:inline-block}
+.btn-fetch.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rate-status{font-size:.75rem;padding:4px 10px;border-radius:6px;display:flex;align-items:center;gap:4px}
+.rate-status.live{background:var(--accent-dim);color:var(--accent)}
+.rate-status.offline{background:var(--yellow-dim);color:var(--yellow)}
+.rate-status.error{background:var(--red-dim);color:var(--red)}
+@media(max-width:900px){.grid,.summary-grid,.grid-3{grid-template-columns:1fr}input[type="number"]{width:100px}}
+</style>
+</head>
+<body>
+<h1>📊 Bảng Làm Giá Sản Phẩm</h1>
+<p class="subtitle">Chọn thị trường, chỉnh số SP mỗi Combo, giá bán, và các chi phí để tự động tính lợi nhuận.</p>
+
+<!-- MARKET SELECTOR -->
+<div class="market-selector">
+  <span class="market-flag" id="marketFlag">🇶🇦</span>
+  <label>Thị trường:</label>
+  <select id="marketSelect" onchange="onMarketChange()">
+    <option value="QATAR">🇶🇦 Qatar (QAR)</option>
+    <option value="UAE">🇦🇪 UAE (AED)</option>
+    <option value="SAUDI">🇸🇦 Saudi Arabia (SAR)</option>
+    <option value="KUWAIT">🇰🇼 Kuwait (KWD)</option>
+    <option value="OMAN">🇴🇲 Oman (OMR)</option>
+    <option value="BAHRAIN">🇧🇭 Bahrain (BHD)</option>
+    <option value="JAPAN">🇯🇵 Nhật Bản (JPY)</option>
+    <option value="TAIWAN">🇹🇼 Đài Loan (TWD)</option>
+  </select>
+  <button class="btn-fetch" id="btnFetch" onclick="fetchRates()"><span class="spinner"></span><span class="btn-text">🔄 Cập nhật tỷ giá</span></button>
+  <span id="marketInfo" style="color:var(--text-dim);font-size:.85rem;margin-left:8px"></span>
+  <span class="rate-status offline" id="rateStatus">⏸ Chưa cập nhật</span>
+</div>
+
+<!-- COMBO CONFIG -->
+<div class="section-title"><span class="dot" style="background:var(--yellow)"></span> Cấu Hình Combo</div>
+<div class="grid-3">
+  <div class="card combo-config-card c1">
+    <div class="combo-title" style="color:var(--accent)">Combo 1</div>
+    <div class="combo-sub">Combo cơ bản</div>
+    <div class="field"><div class="field-label">Số SP / Combo</div><input type="number" class="combo-input" id="c1Qty" value="3" min="1" oninput="calc()"></div>
+    <div class="field"><div class="field-label">Giá bán (<span class="cur-label">QAR</span>)</div><input type="number" class="combo-price" id="c1Price" value="109" min="1" oninput="calc()"></div>
+  </div>
+  <div class="card combo-config-card c2">
+    <div class="combo-title" style="color:var(--blue)">Combo 2</div>
+    <div class="combo-sub">Combo tiết kiệm</div>
+    <div class="field"><div class="field-label">Số SP / Combo</div><input type="number" class="combo-input" id="c2Qty" value="4" min="1" oninput="calc()"></div>
+    <div class="field"><div class="field-label">Giá bán (<span class="cur-label">QAR</span>)</div><input type="number" class="combo-price" id="c2Price" value="179" min="1" oninput="calc()"></div>
+  </div>
+  <div class="card combo-config-card c3">
+    <div class="combo-title" style="color:var(--purple)">Combo 3</div>
+    <div class="combo-sub">Combo đại lý</div>
+    <div class="field"><div class="field-label">Số SP / Combo</div><input type="number" class="combo-input" id="c3Qty" value="6" min="1" oninput="calc()"></div>
+    <div class="field"><div class="field-label">Giá bán (<span class="cur-label">QAR</span>)</div><input type="number" class="combo-price" id="c3Price" value="249" min="1" oninput="calc()"></div>
+  </div>
+</div>
+
+<!-- INPUTS -->
+<div class="grid">
+  <div class="card">
+    <h2>💱 Tỷ Giá & Sản Phẩm</h2>
+    <div class="param-row"><span class="param-label" id="rateLabel">Tỷ giá QAR/VND</span><input type="number" id="rateCur" value="6458" step="1" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Tỷ giá RMB/VND</span><input type="number" id="rateRMB" value="4000" step="1" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Cân nặng / SP (kg)</span><input type="number" id="weightPerSP" value="0.1" step="0.01" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Giá nhập / SP (RMB)</span><input type="number" id="priceRMB" value="2.6" step="0.1" oninput="calc()"></div>
+  </div>
+  <div class="card">
+    <h2>📦 Chi Phí Vận Hành</h2>
+    <div id="shipLegsContainer"></div>
+    <div class="param-row"><span class="param-label">Phí đóng gói (đ/đơn)</span><input type="number" id="packFee" value="24570" step="100" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Phí đơn giao được (đ/đơn)</span><input type="number" id="deliveryFee" value="127868" step="100" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Phí đơn không giao được (đ/đơn)</span><input type="number" id="failFee" value="60021" step="100" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Tỷ lệ giao thành công (%)</span><input type="number" id="gtcRate" value="70" step="1" min="0" max="100" oninput="calc()"></div>
+    <div class="param-row"><span class="param-label">Chi phí Ads / Doanh số (%)</span><input type="number" id="adsRate" value="35" step="1" min="0" max="100" oninput="calc()"></div>
+  </div>
+</div>
+
+<div class="summary-grid" id="summaryCards"></div>
+<div id="comboTables"></div>
+
+<div class="section-title"><span class="dot" style="background:var(--yellow)"></span> So Sánh & Mô Phỏng 100 Đơn</div>
+<div class="table-wrap">
+  <table class="compare-table" id="tableCompare"><thead><tr><th style="width:35%">Hạng mục</th><th class="c1">Combo 1</th><th class="c2">Combo 2</th><th class="c3">Combo 3</th></tr></thead><tbody></tbody></table>
+</div>
+
+<script>
+const MARKETS = {
+  QATAR:   {flag:'🇶🇦',cur:'QAR',rate:6458,  legs:[{l:'China→Dubai',c:196560},{l:'Dubai→Qatar',c:154440}],pack:24570,del:127868,fail:60021},
+  UAE:     {flag:'🇦🇪',cur:'AED',rate:6800,  legs:[{l:'China→Dubai',c:196560}],pack:24570,del:110000,fail:55000},
+  SAUDI:   {flag:'🇸🇦',cur:'SAR',rate:6650,  legs:[{l:'China→Dubai',c:196560},{l:'Dubai→Saudi',c:120000}],pack:24570,del:127868,fail:60021},
+  KUWAIT:  {flag:'🇰🇼',cur:'KWD',rate:81000, legs:[{l:'China→Dubai',c:196560},{l:'Dubai→Kuwait',c:140000}],pack:24570,del:130000,fail:62000},
+  OMAN:    {flag:'🇴🇲',cur:'OMR',rate:64800, legs:[{l:'China→Dubai',c:196560},{l:'Dubai→Oman',c:130000}],pack:24570,del:125000,fail:58000},
+  BAHRAIN: {flag:'🇧🇭',cur:'BHD',rate:66200, legs:[{l:'China→Dubai',c:196560},{l:'Dubai→Bahrain',c:125000}],pack:24570,del:120000,fail:56000},
+  JAPAN:   {flag:'🇯🇵',cur:'JPY',rate:170,   legs:[{l:'China→Nhật',c:280000}],pack:20000,del:100000,fail:50000},
+  TAIWAN:  {flag:'🇹🇼',cur:'TWD',rate:810,   legs:[{l:'China→Đài Loan',c:180000}],pack:18000,del:85000,fail:42000},
+};
+
+const $=id=>document.getElementById(id);
+const fmt=n=>{if(n===0)return'0 đ';const a=Math.abs(Math.round(n));return(n<0?'-':'')+a.toLocaleString('vi-VN')+' đ'};
+const pct=n=>(n*100).toFixed(2)+'%';
+const colors=['var(--accent)','var(--blue)','var(--purple)'];
+const cls=['sc1','sc2','sc3'];
+
+let liveRates = null;
+
+async function fetchRates(){
+  const btn=$('btnFetch');
+  const st=$('rateStatus');
+  btn.classList.add('loading');btn.disabled=true;
+  st.className='rate-status offline';st.textContent='⏳ Đang tải...';
+  try{
+    const res=await fetch('https://open.er-api.com/v6/latest/VND');
+    const data=await res.json();
+    if(data.result==='success'){
+      liveRates=data.rates;
+      const mk=$('marketSelect').value;
+      const cur=MARKETS[mk].cur;
+      // Calculate VND per 1 unit of foreign currency
+      if(liveRates[cur]){
+        const vndPerUnit=Math.round(1/liveRates[cur]);
+        $('rateCur').value=vndPerUnit;
+        MARKETS[mk].rate=vndPerUnit;
+      }
+      // Also update RMB rate
+      if(liveRates['CNY']){
+        const rmbRate=Math.round(1/liveRates['CNY']);
+        $('rateRMB').value=rmbRate;
+      }
+      const now=new Date();
+      const ts=now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+      st.className='rate-status live';st.innerHTML=`🟢 Live · ${ts}`;
+      $('marketInfo').textContent=`1 ${cur} = ${$('rateCur').value.toLocaleString?Number($('rateCur').value).toLocaleString('vi-VN'):$('rateCur').value} VND (realtime)`;
+      calc();
+    }else throw new Error('API error');
+  }catch(e){
+    st.className='rate-status error';st.textContent='❌ Lỗi kết nối';
+    console.error(e);
+  }
+  btn.classList.remove('loading');btn.disabled=false;
+}
+
+function onMarketChange(){
+  const m=MARKETS[$('marketSelect').value];
+  $('marketFlag').textContent=m.flag;
+  $('rateLabel').textContent='Tỷ giá '+m.cur+'/VND';
+  $('packFee').value=m.pack;
+  $('deliveryFee').value=m.del;
+  $('failFee').value=m.fail;
+  document.querySelectorAll('.cur-label').forEach(e=>e.textContent=m.cur);
+  let h='';
+  m.legs.forEach((leg,i)=>{h+=`<div class="param-row"><span class="param-label">Phí VC ${leg.l} (đ/kg)</span><input type="number" class="ship-leg" data-idx="${i}" value="${leg.c}" step="100" oninput="calc()"></div>`;});
+  $('shipLegsContainer').innerHTML=h;
+  // If we have live rates, use them; otherwise use defaults
+  if(liveRates && liveRates[m.cur]){
+    const vndPerUnit=Math.round(1/liveRates[m.cur]);
+    $('rateCur').value=vndPerUnit;
+    m.rate=vndPerUnit;
+    $('marketInfo').textContent=`1 ${m.cur} = ${vndPerUnit.toLocaleString('vi-VN')} VND (realtime)`;
+  }else{
+    $('rateCur').value=m.rate;
+    $('marketInfo').textContent=`1 ${m.cur} = ${m.rate.toLocaleString('vi-VN')} VND (mặc định)`;
+  }
+  calc();
+}
+
+function getShipTotal(){
+  let t=0;document.querySelectorAll('.ship-leg').forEach(e=>{t+=+e.value});return t;
+}
+
+function calcCombo(qty,priceLocal,p){
+  const rev=priceLocal*p.rateCur;
+  const w=qty*p.w;
+  const imp=qty*p.priceRMB*p.rateRMB;
+  const ship=w*p.shipTotal;
+  const cogs=imp+ship;
+  const ads=rev*p.adsRate;
+  const profitGTC=rev-cogs-p.packFee-p.deliveryFee-ads;
+  const lossRet=-(p.packFee+p.failFee);
+  const mGTC=rev>0?profitGTC/rev:0;
+  const gO=Math.round(100*p.gtcRate),rO=100-gO;
+  const net100=gO*profitGTC+rO*lossRet;
+  const rev100=100*rev;
+  const m100=rev100>0?net100/rev100:0;
+  return{qty,rev,w,imp,ship,cogs,ads,profitGTC,lossRet,mGTC,gO,rO,net100,rev100,m100};
+}
+
+function calc(){
+  const cur=MARKETS[$('marketSelect').value].cur;
+  const p={rateCur:+$('rateCur').value,rateRMB:+$('rateRMB').value,w:+$('weightPerSP').value,priceRMB:+$('priceRMB').value,shipTotal:getShipTotal(),packFee:+$('packFee').value,deliveryFee:+$('deliveryFee').value,failFee:+$('failFee').value,gtcRate:+$('gtcRate').value/100,adsRate:+$('adsRate').value/100};
+  const combos=[
+    calcCombo(+$('c1Qty').value,+$('c1Price').value,p),
+    calcCombo(+$('c2Qty').value,+$('c2Price').value,p),
+    calcCombo(+$('c3Qty').value,+$('c3Price').value,p),
+  ];
+  // Summary
+  $('summaryCards').innerHTML=combos.map((c,i)=>`<div class="summary-card ${cls[i]}"><div class="label">Lời/đơn Combo ${i+1} (${c.qty} SP)</div><div class="value ${c.profitGTC>=0?'positive':'negative'}">${fmt(c.profitGTC)}</div><div class="sub">Margin: ${pct(c.mGTC)} · Lỗ hoàn: ${fmt(c.lossRet)}</div></div>`).join('');
+  // Detail tables
+  const adsV=$('adsRate').value;
+  // Build shipping breakdown text
+  const legs=[];document.querySelectorAll('.ship-leg').forEach(e=>{const r=e.closest('.param-row');legs.push({label:r.querySelector('.param-label').textContent.replace(' (đ/kg)',''),val:+e.value})});
+  $('comboTables').innerHTML=combos.map((c,i)=>{
+    let shipRows=legs.map(l=>`<tr class="row-cost"><td>${l.label}</td><td>${fmt(c.w*l.val)}</td><td>—</td></tr>`).join('');
+    return`<div class="section-title"><span class="dot" style="background:${colors[i]}"></span> Combo ${i+1} — ${c.qty} SP</div>
+    <div class="table-wrap"><table><thead><tr><th style="width:40%">Hạng mục</th><th>Đơn GTC</th><th>Đơn Hoàn</th></tr></thead><tbody>
+    <tr><td>Số lượng SP</td><td>${c.qty}</td><td>${c.qty}</td></tr>
+    <tr><td>Cân nặng</td><td>${c.w.toFixed(2)} kg</td><td>${c.w.toFixed(2)} kg</td></tr>
+    <tr class="row-revenue"><td>💵 Doanh số (${cur})</td><td>${fmt(c.rev)}</td><td>0 đ</td></tr>
+    <tr class="row-cost"><td>Giá nhập (RMB→VND)</td><td>${fmt(c.imp)}</td><td>—</td></tr>
+    ${shipRows}
+    <tr><td><strong>Giá vốn</strong></td><td><strong>${fmt(c.cogs)}</strong></td><td>—</td></tr>
+    <tr class="row-cost"><td>Phí đóng gói</td><td>${fmt(p.packFee)}</td><td>${fmt(p.packFee)}</td></tr>
+    <tr class="row-cost"><td>Phí đơn giao được</td><td>${fmt(p.deliveryFee)}</td><td>—</td></tr>
+    <tr class="row-cost"><td>Phí đơn không giao được</td><td>—</td><td>${fmt(p.failFee)}</td></tr>
+    <tr class="row-cost"><td>Chi phí Ads (${adsV}%)</td><td>${fmt(c.ads)}</td><td>—</td></tr>
+    <tr class="${c.profitGTC>=0?'row-profit':'row-loss'}"><td>💰 Lời / Lỗ</td><td class="${c.profitGTC>=0?'positive':'negative'}">${fmt(c.profitGTC)}</td><td class="negative">${fmt(c.lossRet)}</td></tr>
+    <tr><td>📈 Margin / đơn GTC</td><td class="highlight">${pct(c.mGTC)}</td><td>—</td></tr>
+    <tr style="background:var(--yellow-dim)"><td style="color:var(--yellow);font-weight:700">📊 Margin thực tế (tính cả hoàn)</td><td colspan="2" style="text-align:center;font-weight:700" class="highlight">${pct(c.m100)}</td></tr>
+    </tbody></table></div>`;
+  }).join('');
+  // Compare
+  const gO=combos[0].gO,rO=combos[0].rO;
+  const totalNet=combos.reduce((s,c)=>s+c.net100,0);
+  const totalRev=combos.reduce((s,c)=>s+c.rev100,0);
+  $('tableCompare').querySelector('tbody').innerHTML=`
+    <tr><td>Số SP / Combo</td>${combos.map((c,i)=>`<td style="color:${colors[i]};font-weight:700">${c.qty} SP</td>`).join('')}</tr>
+    <tr><td>Doanh số / đơn</td>${combos.map(c=>`<td>${fmt(c.rev)}</td>`).join('')}</tr>
+    <tr><td>Giá vốn / đơn</td>${combos.map(c=>`<td>${fmt(c.cogs)}</td>`).join('')}</tr>
+    <tr><td>Lời / đơn GTC</td>${combos.map(c=>`<td class="${c.profitGTC>=0?'positive':'negative'}" style="font-weight:700">${fmt(c.profitGTC)}</td>`).join('')}</tr>
+    <tr><td>Lỗ / đơn hoàn</td>${combos.map(c=>`<td class="negative">${fmt(c.lossRet)}</td>`).join('')}</tr>
+    <tr><td colspan="4" style="height:8px;border:none;background:var(--surface2)"></td></tr>
+    <tr><td>Tổng doanh số (100 đơn)</td>${combos.map(c=>`<td>${fmt(c.rev100)}</td>`).join('')}</tr>
+    <tr><td>Lời từ ${gO} đơn GTC</td>${combos.map(c=>`<td class="positive">+${fmt(gO*c.profitGTC)}</td>`).join('')}</tr>
+    <tr><td>Lỗ từ ${rO} đơn hoàn</td>${combos.map(c=>`<td class="negative">${fmt(rO*c.lossRet)}</td>`).join('')}</tr>
+    <tr class="row-profit"><td>💰 Lời ròng / 100 đơn</td>${combos.map(c=>`<td class="${c.net100>=0?'positive':'negative'}" style="font-size:1rem">${fmt(c.net100)}</td>`).join('')}</tr>
+    <tr><td>📈 Tỷ suất lợi nhuận</td>${combos.map(c=>`<td class="highlight">${pct(c.m100)}</td>`).join('')}</tr>
+    <tr><td colspan="4" style="height:8px;border:none;background:var(--surface2)"></td></tr>
+    <tr style="background:var(--yellow-dim);font-weight:700;font-size:.95rem"><td style="color:var(--yellow)">🏆 TỔNG 300 ĐƠN (3 Combo)</td><td colspan="3" style="text-align:center" class="${totalNet>=0?'positive':'negative'}">${fmt(totalNet)}</td></tr>
+    <tr style="font-weight:700"><td style="color:var(--yellow)">📊 Tỷ suất LN tổng / Tổng doanh số</td><td colspan="3" style="text-align:center" class="highlight">${pct(totalNet/totalRev)}</td></tr>`;
+}
+
+onMarketChange();
+fetchRates(); // Auto-fetch live rates on page load
+</script>
+</body>
+</html>
